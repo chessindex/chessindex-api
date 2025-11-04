@@ -1,0 +1,28 @@
+services:
+  chessindex-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://user:password@db:5432/chessindex
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18.0
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: chessindex
+      TZ: UTC
+      PGTZ: UTC
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
